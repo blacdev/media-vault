@@ -4,14 +4,12 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
-### Changed
-- Code cleaned up to the WordPress Coding Standards; removed leftover code from earlier versions.
-- Repository documentation: README, contributing guide, security policy, issue and pull-request templates, CI and build script.
-
 ## [1.7.0]
 
 - Storage is chosen per source: Library, Upload form and Contact Form 7 each have their own Local / Local + Dropbox / Dropbox only setting, and each CF7 form can override it. Local folder remains the default everywhere.
 - Submissions show where each file is stored, with a Retry button if a Dropbox copy failed.
+- Code cleaned up to the WordPress Coding Standards; removed leftover code from earlier versions.
+- Repository documentation: README, contributing guide, security policy, issue and pull-request templates, CI and build script.
 
 ## [1.6.1]
 
