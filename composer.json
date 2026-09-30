@@ -1,0 +1,37 @@
+{
+    "name": "blacdev/media-vault",
+    "description": "Secure image and audio uploads, reusable galleries and audio playlists, protected upload forms and Contact Form 7 support for WordPress.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "homepage": "https://github.com/blacdev/media-vault",
+    "support": {
+        "issues": "https://github.com/blacdev/media-vault/issues",
+        "source": "https://github.com/blacdev/media-vault",
+        "security": "https://github.com/blacdev/media-vault/security/policy"
+    },
+    "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "^3.13",
+        "wp-coding-standards/wpcs": "^3.1",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0"
+    },
+    "scripts": {
+        "lint": "phpcs",
+        "lint:fix": "phpcbf",
+        "build": "bash bin/build-zip.sh"
+    },
+    "scripts-descriptions": {
+        "lint": "Check PHP against the WordPress Coding Standards and PHP 7.4+ compatibility.",
+        "lint:fix": "Automatically fix coding-standard formatting issues.",
+        "build": "Build dist/secure-media-vault.zip for installation."
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        },
+        "sort-packages": true
+    }
+}

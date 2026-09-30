@@ -1,0 +1,380 @@
+/* Secure Media Vault — front end
+ * Theme-friendly: inherits fonts and text colour. Override the custom properties below
+ * in your theme to restyle, e.g.  .smv { --smv-accent: #e11d48; }
+ */
+
+.smv {
+	--smv-accent: var(--wp--preset--color--primary, #2563eb);
+	--smv-accent-contrast: #fff;
+	--smv-radius: 10px;
+	--smv-border: color-mix(in srgb, currentColor 14%, transparent);
+	--smv-subtle: color-mix(in srgb, currentColor 5%, transparent);
+	--smv-muted: color-mix(in srgb, currentColor 62%, transparent);
+	box-sizing: border-box;
+	margin-block: 1.5em;
+}
+/* Browsers without color-mix() (pre-2023): neutral fallbacks so nothing renders black or invisible. */
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+	.smv.smv {
+		--smv-border: rgba(128, 128, 128, .28);
+		--smv-subtle: rgba(128, 128, 128, .08);
+		--smv-muted: inherit;
+	}
+	.smv-form.smv-form input[type],
+	.smv-form.smv-form select,
+	.smv-form.smv-form textarea,
+	.smv-drop__label.smv-drop__label { border-color: rgba(128, 128, 128, .4) !important; }
+	.smv-playlist__track.smv-playlist__track.is-active,
+	.smv-drop.smv-drop.is-over .smv-drop__label { background: rgba(37, 99, 235, .1); }
+	.smv-form__status.smv-form__status.is-success { background: #dcfce7; }
+	.smv-form__status.smv-form__status.is-error,
+	.smv-form__queue.smv-form__queue li.is-invalid { background: #fee2e2; }
+}
+
+.smv.smv *,
+.smv.smv *::before,
+.smv.smv *::after { box-sizing: inherit; }
+.smv.smv [hidden] { display: none !important; }
+
+.smv.smv .screen-reader-text {
+	position: absolute !important;
+	width: 1px; height: 1px;
+	overflow: hidden;
+	clip: rect(1px, 1px, 1px, 1px);
+	white-space: nowrap;
+}
+
+.smv-notice.smv-notice { padding: .75em 1em; border: 1px dashed currentColor; border-radius: 8px; opacity: .7; font-size: .9em; }
+
+/* ---------- Theme isolation ----------
+ * Selectors above/below are deliberately doubled (.smv-x.smv-x) so generic theme rules such as
+ * "button", "input[type=text]" or ".entry-content a" can't restyle the plugin's UI.
+ */
+.smv.smv button,
+.smv-lightbox.smv-lightbox button {
+	text-transform: none;
+	letter-spacing: normal;
+	text-shadow: none;
+	box-shadow: none;
+	min-width: 0;
+	float: none;
+}
+.smv.smv img { max-width: 100%; border: 0; box-shadow: none; }
+.smv.smv figure { max-width: none; }
+.smv.smv ul,
+.smv.smv ol { margin-left: 0; }
+.smv.smv li::before,
+.smv.smv li::marker { content: none; }
+.smv-form.smv-form select option { color: #111; background: #fff; } /* readable dropdowns on dark themes */
+.smv-form.smv-form input[type="date"] { color-scheme: light dark; }
+.smv.smv audio { max-width: 100%; }
+
+/* ---------- Gallery ---------- */
+
+.smv-gallery.smv-gallery {
+	display: grid;
+	grid-template-columns: repeat(var(--smv-cols, 3), minmax(0, 1fr));
+	gap: var(--smv-gap, 12px);
+}
+.smv-gallery__item.smv-gallery__item { margin: 0; min-width: 0; }
+.smv-gallery__link.smv-gallery__link { display: block; border-radius: var(--smv-radius); overflow: hidden; cursor: zoom-in; }
+.smv-gallery__link.smv-gallery__link:focus-visible { outline: 3px solid var(--smv-accent); outline-offset: 2px; }
+.smv-gallery.smv-gallery img {
+	display: block;
+	width: 100%;
+	height: auto;
+	border-radius: var(--smv-radius);
+	background: var(--smv-subtle);
+	transition: transform .35s ease, filter .35s ease;
+}
+.smv-gallery__link.smv-gallery__link:hover img { transform: scale(1.03); filter: brightness(1.04); }
+
+.smv-ratio-square.smv-ratio-square img { aspect-ratio: 1; object-fit: cover; }
+.smv-ratio-landscape.smv-ratio-landscape img { aspect-ratio: 4 / 3; object-fit: cover; }
+.smv-ratio-portrait.smv-ratio-portrait img { aspect-ratio: 3 / 4; object-fit: cover; }
+
+.smv-gallery__caption.smv-gallery__caption { margin: .5em 0 0; padding: 0; font-size: .85em; color: var(--smv-muted); line-height: 1.4; }
+
+@media (max-width: 640px) {
+	.smv-gallery.smv-gallery { grid-template-columns: repeat(min(var(--smv-cols, 3), 2), minmax(0, 1fr)); }
+}
+
+/* ---------- Lightbox ---------- */
+
+.smv-lightbox.smv-lightbox {
+	position: fixed;
+	inset: 0;
+	z-index: 999999;
+	display: grid;
+	grid-template-rows: 1fr auto;
+	place-items: center;
+	padding: 56px 64px 24px;
+	background: rgba(8, 8, 10, .94);
+	color: #fff;
+	animation: smv-fade .2s ease-out;
+}
+@keyframes smv-fade { from { opacity: 0; } }
+.smv-lightbox__img.smv-lightbox__img {
+	max-width: 100%;
+	max-height: calc(100vh - 140px);
+	object-fit: contain;
+	border-radius: 4px;
+	box-shadow: 0 20px 60px rgba(0, 0, 0, .5);
+	user-select: none;
+}
+.smv-lightbox__caption.smv-lightbox__caption { margin-top: 14px; font-size: 14px; opacity: .85; text-align: center; min-height: 1.4em; }
+.smv-lightbox__counter.smv-lightbox__counter { position: absolute; top: 18px; left: 20px; font-size: 13px; opacity: .7; font-variant-numeric: tabular-nums; }
+.smv-lightbox.smv-lightbox button {
+	position: absolute;
+	display: grid;
+	place-items: center;
+	width: 44px; height: 44px;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, .1);
+	color: #fff;
+	cursor: pointer;
+	transition: background .15s;
+}
+.smv-lightbox.smv-lightbox button:hover { background: rgba(255, 255, 255, .22); }
+.smv-lightbox.smv-lightbox button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.smv-lightbox__close.smv-lightbox__close { top: 10px; right: 12px; }
+.smv-lightbox__prev.smv-lightbox__prev { left: 12px; top: 50%; transform: translateY(-50%); }
+.smv-lightbox__next.smv-lightbox__next { right: 12px; top: 50%; transform: translateY(-50%); }
+body.smv-noscroll { overflow: hidden; }
+
+@media (max-width: 640px) {
+	.smv-lightbox.smv-lightbox { padding: 56px 8px 16px; }
+	.smv-lightbox__prev.smv-lightbox__prev,
+	.smv-lightbox__next.smv-lightbox__next { top: auto; bottom: 12px; transform: none; }
+}
+
+/* ---------- Playlists ---------- */
+
+.smv-playlist.smv-playlist {
+	border: 1px solid var(--smv-border);
+	border-radius: calc(var(--smv-radius) + 4px);
+	overflow: hidden;
+	background: var(--smv-subtle);
+}
+.smv-playlist__stage.smv-playlist__stage { padding: 18px 18px 14px; }
+
+.smv-playlist__now.smv-playlist__now { margin-bottom: 10px; }
+.smv-playlist__eyebrow.smv-playlist__eyebrow { display: block; font-size: .72em; letter-spacing: .08em; text-transform: uppercase; color: var(--smv-muted); }
+.smv-playlist__title.smv-playlist__title { display: block; font-size: 1.1em; line-height: 1.3; }
+.smv-playlist__media.smv-playlist__media { display: block; width: 100%; }
+
+.smv-playlist__list.smv-playlist__list {
+	margin: 0;
+	padding: 6px;
+	list-style: none;
+	border-top: 1px solid var(--smv-border);
+	max-height: 360px;
+	overflow-y: auto;
+}
+.smv-playlist__list.smv-playlist__list li { margin: 0; }
+.smv-playlist__track.smv-playlist__track {
+	display: grid;
+	grid-template-columns: 2em 1fr auto;
+	align-items: center;
+	gap: .75em;
+	width: 100%;
+	padding: .6em .75em;
+	border: 0;
+	border-radius: 8px;
+	background: none;
+	color: inherit;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+	transition: background .12s;
+}
+.smv-playlist__track.smv-playlist__track:hover { background: var(--smv-subtle); }
+.smv-playlist__track.smv-playlist__track:focus-visible { outline: 2px solid var(--smv-accent); outline-offset: -2px; }
+.smv-playlist__track.smv-playlist__track.is-active { background: color-mix(in srgb, var(--smv-accent) 12%, transparent); }
+.smv-playlist__track.smv-playlist__track.is-active .smv-playlist__num { color: var(--smv-accent); font-weight: 700; }
+.smv-playlist__num.smv-playlist__num { color: var(--smv-muted); font-size: .85em; font-variant-numeric: tabular-nums; text-align: center; }
+.smv-playlist__name.smv-playlist__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.smv-playlist__meta.smv-playlist__meta { font-size: .72em; color: var(--smv-muted); letter-spacing: .04em; }
+
+.smv-playlist__track.smv-playlist__track.is-active.is-playing .smv-playlist__num { font-size: 0; }
+.smv-playlist__track.smv-playlist__track.is-active.is-playing .smv-playlist__num::before {
+	content: "";
+	display: inline-block;
+	width: 12px; height: 12px;
+	background: linear-gradient(var(--smv-accent) 0 0) 0 100% / 3px 40% no-repeat,
+		linear-gradient(var(--smv-accent) 0 0) 50% 100% / 3px 100% no-repeat,
+		linear-gradient(var(--smv-accent) 0 0) 100% 100% / 3px 65% no-repeat;
+	animation: smv-eq 1s ease-in-out infinite alternate;
+}
+@keyframes smv-eq {
+	50% { background-size: 3px 90%, 3px 30%, 3px 100%; }
+	100% { background-size: 3px 60%, 3px 80%, 3px 35%; }
+}
+
+/* ---------- Download list ---------- */
+
+.smv-btn.smv-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: .4em;
+	padding: .55em 1.1em;
+	border: 0;
+	border-radius: 8px;
+	background: var(--smv-accent);
+	color: var(--smv-accent-contrast) !important;
+	font: inherit;
+	font-size: .9em;
+	font-weight: 600;
+	line-height: 1.2;
+	text-decoration: none !important;
+	cursor: pointer;
+	transition: filter .15s, transform .1s;
+}
+.smv-btn.smv-btn:hover { filter: brightness(1.08); }
+.smv-btn.smv-btn:active { transform: translateY(1px); }
+.smv-btn.smv-btn:focus-visible { outline: 3px solid color-mix(in srgb, var(--smv-accent) 45%, transparent); outline-offset: 2px; }
+.smv-btn.smv-btn:disabled { opacity: .6; cursor: progress; }
+
+/* ---------- Mixed ---------- */
+
+.smv-mixed.smv-mixed { display: flex; flex-direction: column; gap: 1.25em; }
+.smv-mixed__item.smv-mixed__item { margin: 0; }
+.smv-mixed__item.smv-mixed__item img { display: block; max-width: 100%; height: auto; border-radius: var(--smv-radius); }
+.smv-mixed__item.smv-mixed__item audio { display: block; width: 100%; border-radius: var(--smv-radius); }
+
+/* ---------- Upload form ---------- */
+
+.smv-form.smv-form {
+	max-width: 640px;
+	padding: 1.75em;
+	border: 1px solid var(--smv-border);
+	border-radius: calc(var(--smv-radius) + 4px);
+}
+.smv-form__title.smv-form__title { margin: 0 0 .35em; font-size: 1.35em; line-height: 1.25; }
+.smv-form__title.smv-form__title + .smv-form__status-wrap:empty + .smv-form__field,
+.smv-form__desc.smv-form__desc + .smv-form__status-wrap:empty + .smv-form__field { margin-top: 1.25em; }
+.smv-form__desc.smv-form__desc { margin: 0 0 1.25em; color: var(--smv-muted); }
+.smv-form__grid.smv-form__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 1em; }
+.smv-form__field.smv-form__field { grid-column: 1 / -1; min-width: 0; margin: 0 0 1em; }
+.smv-form__field--half.smv-form__field--half { grid-column: span 1; }
+@media (max-width: 560px) {
+	.smv-form__field--half.smv-form__field--half { grid-column: 1 / -1; }
+}
+fieldset.smv-form__field { padding: 0; border: 0; }
+fieldset.smv-form__field legend { padding: 0; margin-bottom: .35em; font-weight: 600; font-size: .92em; }
+.smv-form__choices.smv-form__choices { display: flex; flex-wrap: wrap; gap: .4em 1.2em; }
+.smv-choice.smv-choice { display: inline-flex; align-items: center; gap: .45em; font-weight: 400 !important; cursor: pointer; }
+.smv-choice.smv-choice input { width: 1.1em; height: 1.1em; margin: 0; accent-color: var(--smv-accent); }
+.smv-form__field--checkbox.smv-form__field--checkbox:not(fieldset) .smv-choice { align-items: flex-start; }
+.smv-form__field--checkbox.smv-form__field--checkbox:not(fieldset) .smv-choice input { margin-top: .2em; }
+.smv-form__field.smv-form__field label { display: block; margin-bottom: .35em; font-weight: 600; font-size: .92em; }
+.smv-form__optional.smv-form__optional { font-weight: 400; color: var(--smv-muted); }
+.smv-form.smv-form input[type="text"],
+.smv-form.smv-form input[type="email"],
+.smv-form.smv-form input[type="tel"],
+.smv-form.smv-form input[type="url"],
+.smv-form.smv-form input[type="number"],
+.smv-form.smv-form input[type="date"],
+.smv-form.smv-form select,
+.smv-form.smv-form textarea {
+	display: block;
+	width: 100%;
+	padding: .65em .8em;
+	border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+	border-radius: 8px;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	transition: border-color .15s, box-shadow .15s;
+}
+.smv-form.smv-form input:focus,
+.smv-form.smv-form select:focus,
+.smv-form.smv-form textarea:focus { border-color: var(--smv-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--smv-accent) 20%, transparent); outline: none; }
+.smv-form.smv-form [aria-invalid="true"] { border-color: #dc2626 !important; }
+.smv-form.smv-form fieldset[aria-invalid="true"] legend,
+.smv-form.smv-form .smv-choice:has([aria-invalid="true"]) { color: #b91c1c; }
+.smv-form.smv-form select { appearance: auto; min-height: 2.6em; }
+
+.smv-drop.smv-drop { position: relative; margin: 1.25em 0 .5em; }
+.smv-drop__input.smv-drop__input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.smv-drop__label.smv-drop__label {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: .3em;
+	padding: 2em 1em;
+	border: 2px dashed color-mix(in srgb, currentColor 25%, transparent);
+	border-radius: var(--smv-radius);
+	text-align: center;
+	transition: border-color .15s, background .15s;
+}
+.smv-drop__icon.smv-drop__icon { color: var(--smv-accent); margin-bottom: .25em; }
+.smv-drop__title.smv-drop__title { font-weight: 600; }
+.smv-drop__title.smv-drop__title u { color: var(--smv-accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.smv-drop__hint.smv-drop__hint { font-size: .8em; color: var(--smv-muted); }
+.smv-drop.smv-drop:hover .smv-drop__label,
+.smv-drop.smv-drop.is-over .smv-drop__label { border-color: var(--smv-accent); background: color-mix(in srgb, var(--smv-accent) 6%, transparent); }
+.smv-drop__input.smv-drop__input:focus-visible + .smv-drop__label { outline: 3px solid color-mix(in srgb, var(--smv-accent) 45%, transparent); outline-offset: 2px; }
+
+.smv-form__queue.smv-form__queue { margin: 0 0 1em; padding: 0; list-style: none; }
+.smv-form__queue.smv-form__queue li {
+	display: flex;
+	align-items: center;
+	gap: .75em;
+	padding: .5em .75em;
+	margin: 0 0 .4em;
+	border-radius: 8px;
+	background: var(--smv-subtle);
+	font-size: .88em;
+}
+.smv-form__queue.smv-form__queue li.is-invalid { background: color-mix(in srgb, #dc2626 10%, transparent); color: #b91c1c; }
+.smv-form__qname.smv-form__qname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.smv-form__qsize.smv-form__qsize { color: var(--smv-muted); font-size: .9em; white-space: nowrap; }
+.smv-form__qremove.smv-form__qremove {
+	display: grid;
+	place-items: center;
+	width: 26px; height: 26px;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: none;
+	color: inherit;
+	cursor: pointer;
+	opacity: .6;
+}
+.smv-form__qremove.smv-form__qremove:hover { opacity: 1; background: var(--smv-subtle); }
+
+.smv-form__progress.smv-form__progress { height: 6px; margin: 0 0 1em; border-radius: 6px; background: var(--smv-subtle); overflow: hidden; }
+.smv-form__bar.smv-form__bar { display: block; height: 100%; width: 0; background: var(--smv-accent); transition: width .2s; }
+
+.smv-form__submit.smv-form__submit { width: 100%; padding: .85em 1em; font-size: 1em; }
+.smv-form__secure.smv-form__secure { display: flex; align-items: center; justify-content: center; gap: .4em; margin: .9em 0 0; font-size: .78em; color: var(--smv-muted); }
+
+.smv-form__status.smv-form__status { padding: .8em 1em; margin-bottom: 1em; border-radius: 8px; font-size: .92em; }
+.smv-form__status.smv-form__status.is-success { background: color-mix(in srgb, #16a34a 12%, transparent); color: #15803d; }
+.smv-form__status.smv-form__status.is-error { background: color-mix(in srgb, #dc2626 10%, transparent); color: #b91c1c; }
+
+.smv-form--locked.smv-form--locked { text-align: center; }
+
+.smv-hp.smv-hp { position: absolute !important; left: -9999px !important; width: 1px; height: 1px; overflow: hidden; }
+
+@media (prefers-reduced-motion: reduce) {
+	.smv.smv *,
+	.smv-lightbox.smv-lightbox { animation: none !important; transition: none !important; }
+}
+
+/* Backgrounds of the plugin's own buttons are locked: some themes force "button { background: … !important }".
+ * Change the accent via the --smv-accent variable instead. */
+.smv.smv .smv-playlist__track,
+.smv.smv .smv-form__qremove { background: transparent !important; border: 0 !important; color: inherit !important; }
+.smv.smv .smv-playlist__track:hover { background: var(--smv-subtle) !important; }
+.smv.smv .smv-playlist__track.is-active { background: color-mix(in srgb, var(--smv-accent) 12%, transparent) !important; }
+.smv.smv .smv-btn { background: var(--smv-accent) !important; border: 0 !important; }
+.smv-lightbox.smv-lightbox button { background: rgba(255, 255, 255, .1) !important; border: 0 !important; color: #fff !important; }
+.smv-lightbox.smv-lightbox button:hover { background: rgba(255, 255, 255, .22) !important; }
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+	.smv.smv .smv-playlist__track.is-active { background: rgba(37, 99, 235, .1) !important; }
+}

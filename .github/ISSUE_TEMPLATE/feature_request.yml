@@ -1,0 +1,42 @@
+name: Feature request
+description: Suggest an improvement or new capability.
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for the idea! Please search existing issues first. Describing the problem you want solved helps more than describing a specific setting.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      placeholder: "When contributors upload through Contact Form 7 I need…"
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: What would you like to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you've considered
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Library / uploads
+        - Collections (gallery, playlist, mixed)
+        - Upload form ([smv_upload_form])
+        - Contact Form 7 integration
+        - Dropbox / storage
+        - Settings / admin screens
+        - Other
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contribution
+      options:
+        - label: I'd like to work on this myself (please agree the approach in this issue before opening a pull request).

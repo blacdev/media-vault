@@ -1,0 +1,88 @@
+name: Bug report
+description: Something isn't working as described.
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Please **search existing issues** first.
+        **Security problems must not be reported here** — see SECURITY.md.
+        Don't include passwords, API keys, Dropbox secrets or visitors' personal data.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and this hasn't been reported.
+          required: true
+        - label: I deactivated Secure Media Vault, cleared all caches, and confirmed the problem goes away without it.
+          required: true
+        - label: I'm on the latest release.
+          required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to Media Vault → Collections → New collection
+        2. Choose "Audio playlist" and add two MP3 files
+        3. Place [smv_collection id="1"] on a page and click track 2
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Library / uploads
+        - Collections (gallery, playlist, mixed)
+        - Upload form ([smv_upload_form])
+        - Contact Form 7 integration
+        - Dropbox / storage
+        - Settings / admin screens
+        - Theme or plugin compatibility
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin version
+      placeholder: "1.7.0"
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: WordPress version, PHP version, web server, theme, and relevant plugins (Tools → Site Health → Info → Copy site info — keep only what's relevant).
+      placeholder: |
+        WordPress 6.8, PHP 8.2, nginx
+        Theme: Pro Radio 3.x
+        Plugins: Elementor 3.x, Contact Form 7 6.x, WP Ghost 7.x
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Errors and logs
+      description: Browser console errors (F12 → Console) and PHP errors from wp-content/debug.log.
+      render: text
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Drag images here if the problem is visual.

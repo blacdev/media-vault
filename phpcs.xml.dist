@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<ruleset name="Secure Media Vault">
+	<description>Coding standards for Secure Media Vault.</description>
+
+	<file>.</file>
+	<exclude-pattern>/vendor/*</exclude-pattern>
+	<exclude-pattern>/node_modules/*</exclude-pattern>
+	<exclude-pattern>/dist/*</exclude-pattern>
+	<exclude-pattern>*/assets/*</exclude-pattern>
+
+	<arg name="extensions" value="php"/>
+	<arg value="sp"/>
+	<arg name="colors"/>
+
+	<config name="minimum_wp_version" value="6.0"/>
+	<config name="testVersion" value="7.4-"/>
+
+	<rule ref="WordPress-Extra"/>
+	<rule ref="WordPress-Docs">
+		<!-- Short, focused inline docs are preferred over boilerplate @param blocks. -->
+		<exclude name="Squiz.Commenting.FunctionComment.Missing"/>
+		<exclude name="Squiz.Commenting.FunctionComment.MissingParamTag"/>
+		<exclude name="Squiz.Commenting.FunctionComment.MissingParamComment"/>
+		<exclude name="Squiz.Commenting.ClassComment.Missing"/>
+		<exclude name="Squiz.Commenting.VariableComment.Missing"/>
+		<exclude name="Generic.Commenting.DocComment.MissingShort"/>
+		<exclude name="Squiz.Commenting.FunctionComment.ParamCommentFullStop"/>
+		<exclude name="Squiz.Commenting.InlineComment.InvalidEndChar"/>
+		<exclude name="Squiz.Commenting.FileComment.Missing"/>
+	</rule>
+	<rule ref="PHPCompatibilityWP"/>
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="secure-media-vault"/>
+			</property>
+		</properties>
+	</rule>
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="smv_"/>
+			</property>
+		</properties>
+	</rule>
+	<rule ref="WordPress.WP.Capabilities">
+		<properties>
+			<!-- Registered by Contact Form 7. -->
+			<property name="custom_capabilities" type="array">
+				<element value="wpcf7_edit_contact_form"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!-- Code is grouped with line-comment section dividers; the empty index.php files are standard WordPress "silence is golden" guards. -->
+	<rule ref="Squiz.Commenting.FunctionComment.WrongStyle">
+		<severity>0</severity>
+	</rule>
+	<rule ref="Squiz.Commenting.FileComment.WrongStyle">
+		<exclude-pattern>*/index.php</exclude-pattern>
+	</rule>
+	<rule ref="Squiz.Commenting.FileComment.Missing">
+		<exclude-pattern>*/index.php</exclude-pattern>
+	</rule>
+
+	<!-- Class files follow the WordPress "class-*.php" convention; views are plain templates. -->
+	<rule ref="WordPress.Files.FileName.InvalidClassFileName">
+		<exclude-pattern>*/admin/views/*</exclude-pattern>
+	</rule>
+</ruleset>
