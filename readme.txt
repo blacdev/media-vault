@@ -4,7 +4,7 @@ Tags: uploads, dropbox, gallery, audio playlist, file upload form
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.7.0
+Stable tag: 1.8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -15,7 +15,7 @@ Secure uploads to a folder you control, optional Dropbox storage, reusable media
 Secure Media Vault adds a "Media Vault" menu to your WordPress admin with five sections:
 
 * **Library** – drag-and-drop uploads into your own protected folder (wp-content/uploads/<your folder>).
-* **Collections** – build image galleries, audio playlists or mixed sets (images + audio).
+* **Collections** – build image galleries, audio playlists or mixed sets (plus video playlists and download lists when those formats are enabled).
   Each one gets a shortcode such as `[smv_collection id="3"]`. Edit the collection and every page using it updates.
 * **Upload form** – build your upload form and copy its `[smv_upload_form]` shortcode (with a step-by-step guide).
 * **Submissions** – files people send you through the upload form (or connected Contact Form 7 forms), with their answers.
@@ -35,21 +35,23 @@ Updating: upload the new zip the same way; WordPress will offer to replace the c
 
 == Accepted file types ==
 
-Only these files are ever accepted – in the Library, in the upload form and from Contact Form 7:
+Always available: **JPG, JPEG, PNG** (images) and **MP3, WAV** (audio).
 
-* Images: JPG, JPEG, PNG
-* Audio: MP3, WAV
+Optional formats – off until you enable them in Settings → Storage → File formats:
 
-Everything else (documents, video, SVG, scripts, programs…) is refused, and each file's contents are checked against its extension. Under Settings you can narrow this further (e.g. audio only for a form), but never widen it.
+* Images: GIF, WebP, AVIF
+* Audio: M4A, OGG, FLAC, AAC
+* Video: MP4, M4V, WebM, MOV
+* Documents: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, CSV, ZIP
 
-== Storage limit ==
+How it works:
 
-Settings → Storage → Storage limit caps the total size of everything in Media Vault (default 50 GB). Change it whenever you like; use 0 for no limit.
+1. Enable a format under **File formats** and save. It then appears as a choice under **Allowed file types** (Library, on the Storage tab) and **File types accepted by forms** (Upload forms tab).
+2. Select it where you want to accept it and save. Only then can files of that format be uploaded there.
 
-* It counts every file from anyone: your Library uploads, the upload form and Contact Form 7 — including private submissions and files kept on Dropbox. Deleting files frees space immediately.
-* The Library shows how much is used ("X of 50 GB") with a bar that turns amber at 80% and red at 95%. From 90% a warning appears on the Media Vault screens.
-* When the limit is reached: your own uploads are refused with a message showing the space left; the upload form shows "We're not accepting new files at the moment" instead of the form; Contact Form 7 forms still send normally and the file reaches you as a regular email attachment, so nothing is lost.
-* The maximum size of a single file is a separate setting (Maximum file size), also limited by your server.
+Enabling a video format adds the **Video playlist** collection type and the Video filter; enabling a document format adds the **Download list** type and the Documents filter. Turning a format off again hides its files and stops new uploads, without deleting anything.
+
+Scriptable formats (PHP, HTML, SVG, JavaScript, programs) are never supported, and every file's contents are checked against its extension.
 
 == Installing on a live site safely ==
 
@@ -111,6 +113,8 @@ Types:
 
 * **Image gallery** – responsive grid with a lightbox (keyboard, swipe, captions).
 * **Audio playlist** – player with a track list; can continue to the next track and loop.
+* **Video playlist** – player with a video list (available when a video format is enabled).
+* **Download list** – tidy list of files with a Download button (available when a document format is enabled).
 * **Mixed media** – each item rendered according to its type.
 
 Place a collection anywhere with its id or its slug:
@@ -300,6 +304,10 @@ Yes – each collection has display options, shortcodes accept overrides, and th
 Dropbox credentials are always removed. Settings, collections and records are removed only if you enabled that under Settings → Storage → Uninstall. Your files are never deleted.
 
 == Changelog ==
+
+= 1.8.0 =
+* Optional file formats are back – GIF, WebP, AVIF, M4A, OGG, FLAC, AAC, MP4, M4V, WebM, MOV, PDF, Word, Excel, PowerPoint, TXT, CSV and ZIP – but off by default. Enable them in Settings → Storage → File formats; only then can they be selected and uploaded.
+* Video playlists and download lists return when a video or document format is enabled.
 
 = 1.7.0 =
 * Storage is chosen per source: Library, Upload form and Contact Form 7 each have their own Local / Local + Dropbox / Dropbox only setting, and each CF7 form can override it. Local folder remains the default everywhere.

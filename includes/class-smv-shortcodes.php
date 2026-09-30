@@ -150,8 +150,8 @@ class SMV_Shortcodes {
 		$files = SMV_Files::get_many( $collection->items );
 		$items = array();
 		foreach ( $collection->items as $fid ) {
-			// Only public images and audio are ever shown (older uploads of other types are skipped).
-			if ( isset( $files[ $fid ] ) && 'public' === $files[ $fid ]->visibility && in_array( $files[ $fid ]->file_group, array( 'image', 'audio' ), true ) ) {
+			// Only public files of an enabled format are ever shown.
+			if ( isset( $files[ $fid ] ) && 'public' === $files[ $fid ]->visibility && in_array( $files[ $fid ]->file_group, SMV_Settings::active_groups(), true ) ) {
 				$items[] = $files[ $fid ];
 			}
 		}
@@ -174,7 +174,11 @@ class SMV_Shortcodes {
 
 		switch ( $collection->type ) {
 			case 'audio':
-				$html = self::render_playlist( $items, $s );
+			case 'video':
+				$html = self::render_playlist( $items, $s, $collection->type );
+				break;
+			case 'files':
+				$html = self::render_files( $items );
 				break;
 			case 'mixed':
 				$html = self::render_mixed( $items, $s );
@@ -230,12 +234,32 @@ class SMV_Shortcodes {
 		return $out . '</div>';
 	}
 
-	private static function render_playlist( array $items, array $s ) {
+	/** Download link: Dropbox links force a download; "#noajax" keeps AJAX-navigation themes out. */
+	private static function download_url( $file ) {
+		$url = SMV_Files::url( $file );
+		if ( false !== strpos( $url, 'dropbox' ) ) {
+			$url = add_query_arg( 'dl', '1', remove_query_arg( 'raw', $url ) );
+		}
+		if ( self::ajax_theme_detected() ) {
+			$url .= '#noajax';
+		}
+		return $url;
+	}
+
+	/**
+	 * Audio or video playlist.
+	 *
+	 * @param object[] $items Files in order.
+	 * @param array    $s     Display settings.
+	 * @param string   $kind  audio | video.
+	 */
+	private static function render_playlist( array $items, array $s, $kind = 'audio' ) {
+		$kind   = 'video' === $kind ? 'video' : 'audio';
 		$tracks = array_values(
 			array_filter(
 				$items,
-				function ( $f ) {
-					return 'audio' === $f->file_group;
+				function ( $f ) use ( $kind ) {
+					return $kind === $f->file_group;
 				}
 			)
 		);
@@ -245,15 +269,19 @@ class SMV_Shortcodes {
 		$first = $tracks[0];
 
 		$out  = sprintf(
-			'<div class="smv-playlist smv-playlist--audio"%1$s%2$s>',
+			'<div class="smv-playlist smv-playlist--%1$s"%2$s%3$s>',
+			esc_attr( $kind ),
 			$s['autoplay'] ? ' data-smv-autoplay' : '',
 			$s['loop'] ? ' data-smv-loop' : ''
 		);
 		$out .= '<div class="smv-playlist__stage">';
-		$out .= '<div class="smv-playlist__now"><span class="smv-playlist__eyebrow">' . esc_html__( 'Now playing', 'secure-media-vault' ) . '</span>';
-		$out .= '<strong class="smv-playlist__title" aria-live="polite">' . esc_html( $first->title ) . '</strong></div>';
+		if ( 'audio' === $kind ) {
+			$out .= '<div class="smv-playlist__now"><span class="smv-playlist__eyebrow">' . esc_html__( 'Now playing', 'secure-media-vault' ) . '</span>';
+			$out .= '<strong class="smv-playlist__title" aria-live="polite">' . esc_html( $first->title ) . '</strong></div>';
+		}
 		$out .= sprintf(
-			'<audio class="smv-playlist__media" controls preload="metadata"%2$s src="%1$s"></audio>',
+			'<%1$s class="smv-playlist__media" controls preload="metadata" playsinline%3$s src="%2$s"></%1$s>',
+			$kind,
 			esc_url( SMV_Files::url( $first ) ),
 			$s['download'] ? '' : ' controlsList="nodownload"'
 		);
@@ -276,13 +304,41 @@ class SMV_Shortcodes {
 		return $out . '</ol></div>';
 	}
 
-	/** Images and audio, each rendered by its type, in the collection's order. */
+	private static function file_row( $f ) {
+		return sprintf(
+			'<li class="smv-files__row"><span class="smv-files__icon smv-files__icon--%1$s" aria-hidden="true">%2$s</span><span class="smv-files__meta"><span class="smv-files__name">%3$s</span><span class="smv-files__info">%4$s · %2$s</span></span><a class="smv-files__btn" href="%5$s" download rel="nofollow">%6$s<span class="screen-reader-text"> %3$s</span></a></li>',
+			esc_attr( $f->file_group ),
+			esc_html( strtoupper( $f->ext ) ),
+			esc_html( $f->title ),
+			esc_html( SMV_Files::human_size( $f->size ) ),
+			esc_url( self::download_url( $f ) ),
+			esc_html__( 'Download', 'secure-media-vault' )
+		);
+	}
+
+	private static function render_files( array $items ) {
+		$out = '<ul class="smv-files">';
+		foreach ( $items as $f ) {
+			$out .= self::file_row( $f );
+		}
+		return $out . '</ul>';
+	}
+
+	/** Every item shown by its type, in the collection's order. */
 	private static function render_mixed( array $items, array $s ) {
-		$out = '';
+		$out   = '';
+		$files = array();
+		$flush = function () use ( &$files, &$out ) {
+			if ( $files ) {
+				$out  .= '<ul class="smv-files">' . implode( '', $files ) . '</ul>';
+				$files = array();
+			}
+		};
 		foreach ( $items as $f ) {
 			$caption = $f->caption ? $f->caption : $f->title;
 			$figcap  = $s['captions'] ? '<figcaption class="smv-gallery__caption">' . esc_html( $caption ) . '</figcaption>' : '';
 			if ( 'image' === $f->file_group ) {
+				$flush();
 				$out .= sprintf(
 					'<figure class="smv-mixed__item smv-mixed__item--image"%4$s><a class="smv-gallery__link" href="%1$s" data-smv-caption="%3$s" data-elementor-open-lightbox="no"><img src="%2$s" alt="%3$s" loading="lazy" decoding="async"></a>%5$s</figure>',
 					esc_url( self::link_url( $f ) ),
@@ -291,14 +347,20 @@ class SMV_Shortcodes {
 					$s['lightbox'] ? ' data-smv-lightbox' : '',
 					$figcap
 				);
-			} elseif ( 'audio' === $f->file_group ) {
+			} elseif ( 'audio' === $f->file_group || 'video' === $f->file_group ) {
+				$flush();
+				$tag  = 'video' === $f->file_group ? 'video' : 'audio';
 				$out .= sprintf(
-					'<figure class="smv-mixed__item smv-mixed__item--audio"><audio controls preload="metadata" src="%1$s"></audio>%2$s</figure>',
+					'<figure class="smv-mixed__item smv-mixed__item--%1$s"><%1$s controls preload="metadata" playsinline src="%2$s"></%1$s>%3$s</figure>',
+					$tag,
 					esc_url( SMV_Files::url( $f ) ),
 					$figcap
 				);
+			} else {
+				$files[] = self::file_row( $f );
 			}
 		}
+		$flush();
 		return '<div class="smv-mixed">' . $out . '</div>';
 	}
 }

@@ -4,6 +4,11 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.8.0]
+
+- Optional file formats are back – GIF, WebP, AVIF, M4A, OGG, FLAC, AAC, MP4, M4V, WebM, MOV, PDF, Word, Excel, PowerPoint, TXT, CSV and ZIP – but off by default. Enable them in Settings → Storage → File formats; only then can they be selected and uploaded.
+- Video playlists and download lists return when a video or document format is enabled.
+
 ## [1.7.0]
 
 - Storage is chosen per source: Library, Upload form and Contact Form 7 each have their own Local / Local + Dropbox / Dropbox only setting, and each CF7 form can override it. Local folder remains the default everywhere.

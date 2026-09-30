@@ -38,42 +38,116 @@ class SMV_Settings {
 	}
 
 	/**
-	 * The only file types the plugin ever accepts: JPG/JPEG/PNG images and MP3/WAV audio.
-	 * Everything else (documents, video, SVG, scripts, programs…) is refused.
+	 * Every file format the plugin knows about, grouped. JPG, JPEG, PNG, MP3 and WAV are always
+	 * available; all other formats are off until enabled in Settings → Storage → File formats.
+	 * Scriptable formats (PHP, HTML, SVG, JS, executables…) are never supported.
 	 */
-	public static function type_catalogue() {
+	public static function full_catalogue() {
 		return array(
-			'image' => array(
+			'image'    => array(
 				'label' => __( 'Images', 'secure-media-vault' ),
 				'types' => array(
 					'jpg'  => 'image/jpeg',
 					'jpeg' => 'image/jpeg',
 					'png'  => 'image/png',
+					'gif'  => 'image/gif',
+					'webp' => 'image/webp',
+					'avif' => 'image/avif',
 				),
 			),
-			'audio' => array(
+			'audio'    => array(
 				'label' => __( 'Audio', 'secure-media-vault' ),
 				'types' => array(
-					'mp3' => 'audio/mpeg',
-					'wav' => 'audio/wav',
+					'mp3'  => 'audio/mpeg',
+					'wav'  => 'audio/wav',
+					'm4a'  => 'audio/mp4',
+					'ogg'  => 'audio/ogg',
+					'flac' => 'audio/flac',
+					'aac'  => 'audio/aac',
+				),
+			),
+			'video'    => array(
+				'label' => __( 'Video', 'secure-media-vault' ),
+				'types' => array(
+					'mp4'  => 'video/mp4',
+					'm4v'  => 'video/mp4',
+					'webm' => 'video/webm',
+					'mov'  => 'video/quicktime',
+				),
+			),
+			'document' => array(
+				'label' => __( 'Documents', 'secure-media-vault' ),
+				'types' => array(
+					'pdf'  => 'application/pdf',
+					'doc'  => 'application/msword',
+					'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+					'xls'  => 'application/vnd.ms-excel',
+					'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+					'ppt'  => 'application/vnd.ms-powerpoint',
+					'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+					'txt'  => 'text/plain',
+					'csv'  => 'text/csv',
+					'zip'  => 'application/zip',
 				),
 			),
 		);
 	}
 
-	/** Every allowed extension mapped to its MIME type. */
-	public static function all_types() {
+	/** Formats that are always available. */
+	public static function core_types() {
+		return array( 'jpg', 'jpeg', 'png', 'mp3', 'wav' );
+	}
+
+	/** Optional formats (off until enabled), as ext => group key. */
+	public static function extra_types() {
 		$out = array();
-		foreach ( self::type_catalogue() as $group ) {
+		foreach ( self::full_catalogue() as $key => $group ) {
+			foreach ( array_keys( $group['types'] ) as $ext ) {
+				if ( ! in_array( $ext, self::core_types(), true ) ) {
+					$out[ $ext ] = $key;
+				}
+			}
+		}
+		return $out;
+	}
+
+	/**
+	 * The formats currently in use: the core formats plus any enabled in Settings.
+	 * Groups without any enabled format are left out.
+	 *
+	 * @param string[]|null $enabled Enabled optional formats; defaults to the saved setting.
+	 */
+	public static function type_catalogue( $enabled = null ) {
+		$enabled = null === $enabled ? (array) self::get( 'enabled_formats' ) : (array) $enabled;
+		$active  = array_merge( self::core_types(), $enabled );
+		$out     = array();
+		foreach ( self::full_catalogue() as $key => $group ) {
+			$group['types'] = array_intersect_key( $group['types'], array_flip( $active ) );
+			if ( $group['types'] ) {
+				$out[ $key ] = $group;
+			}
+		}
+		return $out;
+	}
+
+	/** Group keys (image, audio, video, document) that have at least one enabled format. */
+	public static function active_groups() {
+		return array_keys( self::type_catalogue() );
+	}
+
+	/** Every usable extension mapped to its MIME type. */
+	public static function all_types( $enabled = null ) {
+		$out = array();
+		foreach ( self::type_catalogue( $enabled ) as $group ) {
 			$out += $group['types'];
 		}
 		return $out;
 	}
 
-	/** Returns the group key (image/audio) for an extension, or '' if it isn't allowed. */
+	/** Returns the group key (image/audio/video/document) for any known extension, or ''. */
 	public static function group_for_ext( $ext ) {
 		$ext = strtolower( (string) $ext );
-		foreach ( self::type_catalogue() as $key => $group ) {
+		foreach ( self::full_catalogue() as $key => $group ) {
 			if ( isset( $group['types'][ $ext ] ) ) {
 				return $key;
 			}
@@ -85,6 +159,7 @@ class SMV_Settings {
 		return array(
 			// General.
 			'folder'               => 'secure-media-vault',
+			'enabled_formats'      => array(), // Optional formats switched on (none by default).
 			'allowed_types'        => array( 'jpg', 'jpeg', 'png', 'mp3', 'wav' ),
 			'max_size_mb'          => 128,
 			'quota_gb'             => 50, // Total storage limit for everything in the vault. 0 = no limit.
@@ -116,9 +191,10 @@ class SMV_Settings {
 
 	public static function all() {
 		if ( null === self::$cache ) {
-			$saved       = get_option( self::OPTION, array() );
-			self::$cache = wp_parse_args( is_array( $saved ) ? $saved : array(), self::defaults() );
-			// Settings saved by older versions may list types that are no longer supported.
+			$saved                          = get_option( self::OPTION, array() );
+			self::$cache                    = wp_parse_args( is_array( $saved ) ? $saved : array(), self::defaults() );
+			self::$cache['enabled_formats'] = array_values( array_intersect( array_keys( self::extra_types() ), (array) self::$cache['enabled_formats'] ) );
+			// Only formats that are currently enabled can be allowed.
 			$valid = array_keys( self::all_types() );
 			foreach ( array( 'allowed_types', 'form_allowed_types' ) as $key ) {
 				self::$cache[ $key ] = array_values( array_intersect( (array) self::$cache[ $key ], $valid ) );
@@ -187,8 +263,8 @@ class SMV_Settings {
 		return '/' . implode( '/', $parts );
 	}
 
-	private static function sanitize_types( $input ) {
-		$valid = array_keys( self::all_types() );
+	private static function sanitize_types( $input, $enabled_formats ) {
+		$valid = array_keys( self::all_types( $enabled_formats ) );
 		$input = is_array( $input ) ? array_map( 'sanitize_key', $input ) : array();
 		return array_values( array_intersect( $valid, $input ) );
 	}
@@ -205,7 +281,10 @@ class SMV_Settings {
 		$old_folder    = self::get( 'folder' );
 		$out['folder'] = isset( $input['folder'] ) ? self::sanitize_folder( $input['folder'] ) : $d['folder'];
 
-		$out['allowed_types'] = self::sanitize_types( isset( $input['allowed_types'] ) ? $input['allowed_types'] : array() );
+		$extras                 = isset( $input['enabled_formats'] ) ? array_map( 'sanitize_key', (array) $input['enabled_formats'] ) : array();
+		$out['enabled_formats'] = array_values( array_intersect( array_keys( self::extra_types() ), $extras ) );
+
+		$out['allowed_types'] = self::sanitize_types( isset( $input['allowed_types'] ) ? $input['allowed_types'] : array(), $out['enabled_formats'] );
 		$out['max_size_mb']   = isset( $input['max_size_mb'] ) ? max( 1, min( 10240, absint( $input['max_size_mb'] ) ) ) : $d['max_size_mb'];
 		$quota                = isset( $input['quota_gb'] ) ? (float) str_replace( ',', '.', (string) $input['quota_gb'] ) : $d['quota_gb'];
 		$out['quota_gb']      = max( 0, min( 100000, round( $quota, 2 ) ) );
@@ -228,7 +307,7 @@ class SMV_Settings {
 		$access             = isset( $input['form_access'] ) ? sanitize_key( $input['form_access'] ) : 'logged_in';
 		$out['form_access'] = in_array( $access, array( 'logged_in', 'anyone' ), true ) ? $access : 'logged_in';
 
-		$out['form_allowed_types']   = self::sanitize_types( isset( $input['form_allowed_types'] ) ? $input['form_allowed_types'] : array() );
+		$out['form_allowed_types']   = self::sanitize_types( isset( $input['form_allowed_types'] ) ? $input['form_allowed_types'] : array(), $out['enabled_formats'] );
 		$out['form_max_files']       = isset( $input['form_max_files'] ) ? max( 1, min( 50, absint( $input['form_max_files'] ) ) ) : $d['form_max_files'];
 		$out['form_max_size_mb']     = isset( $input['form_max_size_mb'] ) ? max( 1, min( 2048, absint( $input['form_max_size_mb'] ) ) ) : $d['form_max_size_mb'];
 		$out['form_rate_limit']      = isset( $input['form_rate_limit'] ) ? max( 1, min( 1000, absint( $input['form_rate_limit'] ) ) ) : $d['form_rate_limit'];

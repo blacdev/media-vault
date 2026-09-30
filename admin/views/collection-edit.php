@@ -130,10 +130,10 @@ SMV_Admin::header(
 			$smv_toggles = array(
 				'lightbox'  => array( __( 'Open images in a lightbox', 'secure-media-vault' ), 'gallery mixed' ),
 				'captions'  => array( __( 'Show captions', 'secure-media-vault' ), 'gallery mixed' ),
-				'show_list' => array( __( 'Show track list', 'secure-media-vault' ), 'audio' ),
-				'autoplay'  => array( __( 'Continue to next track automatically', 'secure-media-vault' ), 'audio' ),
-				'loop'      => array( __( 'Loop playlist', 'secure-media-vault' ), 'audio' ),
-				'download'  => array( __( 'Allow download button in player', 'secure-media-vault' ), 'audio' ),
+				'show_list' => array( __( 'Show track list', 'secure-media-vault' ), 'audio video' ),
+				'autoplay'  => array( __( 'Continue to next track automatically', 'secure-media-vault' ), 'audio video' ),
+				'loop'      => array( __( 'Loop playlist', 'secure-media-vault' ), 'audio video' ),
+				'download'  => array( __( 'Allow download button in player', 'secure-media-vault' ), 'audio video' ),
 			);
 			foreach ( $smv_toggles as $smv_key => $smv_toggle ) :
 				?>
@@ -143,6 +143,7 @@ SMV_Admin::header(
 					<span class="smv-switch__label"><?php echo esc_html( $smv_toggle[0] ); ?></span>
 				</label>
 			<?php endforeach; ?>
+			<p class="smv-help" data-smv-show-for="files"><?php esc_html_e( 'Download lists have no extra display options.', 'secure-media-vault' ); ?></p>
 		</div>
 	</aside>
 </form>
@@ -158,8 +159,9 @@ SMV_Admin::header(
 		<div class="smv-modal__toolbar">
 			<div class="smv-chips" data-smv-picker-filters>
 				<button type="button" class="smv-chip" data-smv-filter="all"><?php esc_html_e( 'All', 'secure-media-vault' ); ?></button>
-				<button type="button" class="smv-chip" data-smv-filter="image"><?php esc_html_e( 'Images', 'secure-media-vault' ); ?></button>
-				<button type="button" class="smv-chip" data-smv-filter="audio"><?php esc_html_e( 'Audio', 'secure-media-vault' ); ?></button>
+				<?php foreach ( SMV_Settings::type_catalogue() as $smv_gkey => $smv_group ) : ?>
+					<button type="button" class="smv-chip" data-smv-filter="<?php echo esc_attr( $smv_gkey ); ?>"><?php echo esc_html( $smv_group['label'] ); ?></button>
+				<?php endforeach; ?>
 			</div>
 			<label class="smv-search">
 				<span class="screen-reader-text"><?php esc_html_e( 'Search files', 'secure-media-vault' ); ?></span>

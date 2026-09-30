@@ -105,10 +105,12 @@ class SMV_Files {
 		}
 		if ( $args['group'] && 'all' !== $args['group'] ) {
 			$where[]  = 'file_group = %s';
-			$params[] = $args['group'];
+			$params[] = in_array( $args['group'], SMV_Settings::active_groups(), true ) ? $args['group'] : '__disabled__';
 		} else {
-			// Only images and audio are supported; files of other types from older versions stay hidden.
-			$where[] = "file_group IN ('image','audio')";
+			// Only groups with an enabled format are shown (e.g. PDFs stay hidden while documents are off).
+			$groups  = SMV_Settings::active_groups();
+			$where[] = 'file_group IN (' . implode( ',', array_fill( 0, count( $groups ), '%s' ) ) . ')';
+			$params  = array_merge( $params, $groups );
 		}
 		if ( $args['submission_id'] ) {
 			$where[]  = 'submission_id = %d';
@@ -143,9 +145,11 @@ class SMV_Files {
 
 	public static function counts() {
 		global $wpdb;
-		$table = self::table();
-		$rows  = $wpdb->get_results( "SELECT file_group, COUNT(*) AS c, SUM(size) AS s FROM {$table} WHERE visibility = 'public' AND file_group IN ('image','audio') GROUP BY file_group" ); // phpcs:ignore WordPress.DB
-		$out   = array(
+		$table  = self::table();
+		$groups = SMV_Settings::active_groups();
+		$in     = implode( ',', array_fill( 0, count( $groups ), '%s' ) );
+		$rows   = $wpdb->get_results( $wpdb->prepare( "SELECT file_group, COUNT(*) AS c, SUM(size) AS s FROM {$table} WHERE visibility = 'public' AND file_group IN ($in) GROUP BY file_group", $groups ) ); // phpcs:ignore WordPress.DB
+		$out    = array(
 			'all'   => 0,
 			'bytes' => 0,
 		);

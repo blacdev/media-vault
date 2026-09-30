@@ -50,7 +50,7 @@ class SMV_Download {
 			wp_die( esc_html__( 'The file is missing from storage.', 'secure-media-vault' ), 404 );
 		}
 
-		$inline_ok = in_array( $file->file_group, array( 'image', 'audio' ), true );
+		$inline_ok = in_array( $file->file_group, array( 'image', 'audio', 'video' ), true ) || 'pdf' === $file->ext;
 		$inline    = ! empty( $_GET['inline'] ) && $inline_ok; // phpcs:ignore WordPress.Security.NonceVerification
 		$type      = $inline ? $file->mime : 'application/octet-stream';
 		$name      = sanitize_file_name( $file->original_name );

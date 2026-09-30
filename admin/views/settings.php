@@ -167,6 +167,46 @@ $smv_type_checks = function ( $field, $selected ) use ( $smv_catalogue, $smv_nam
 				</div>
 			</div>
 
+			<div class="smv-card" id="smv-formats">
+				<h2 class="smv-card__title"><?php esc_html_e( 'File formats', 'secure-media-vault' ); ?></h2>
+				<p class="smv-help" style="margin:-6px 0 14px"><?php esc_html_e( 'JPG, JPEG, PNG, MP3 and WAV are always available. Other formats are off until you enable them here. After you enable a format and save, it can be selected under “Allowed file types” below (Library) and on the Upload forms tab — nothing can be uploaded in that format until you also select it there.', 'secure-media-vault' ); ?></p>
+				<div class="smv-typeset">
+					<div class="smv-typeset__head"><strong><?php esc_html_e( 'Always available', 'secure-media-vault' ); ?></strong></div>
+					<div class="smv-checks">
+						<?php foreach ( SMV_Settings::core_types() as $smv_ext ) : ?>
+							<span class="smv-check is-locked"><span><?php echo esc_html( strtoupper( $smv_ext ) ); ?></span></span>
+						<?php endforeach; ?>
+					</div>
+				</div>
+				<?php
+				$smv_extras  = SMV_Settings::extra_types();
+				$smv_enabled = (array) $smv_s['enabled_formats'];
+				foreach ( SMV_Settings::full_catalogue() as $smv_gkey => $smv_group ) :
+					$smv_opt = array_keys( array_filter( $smv_extras, function ( $g ) use ( $smv_gkey ) { return $g === $smv_gkey; } ) ); // phpcs:ignore
+					if ( ! $smv_opt ) {
+						continue;
+					}
+					?>
+					<div class="smv-typeset">
+						<div class="smv-typeset__head">
+							<strong>
+								<?php
+								/* translators: %s: group name, e.g. Documents */
+								printf( esc_html__( '%s (optional)', 'secure-media-vault' ), esc_html( $smv_group['label'] ) );
+								?>
+							</strong>
+							<button type="button" class="smv-link" data-smv-toggle-all="<?php echo esc_attr( 'formats-' . $smv_gkey ); ?>"><?php esc_html_e( 'Toggle all', 'secure-media-vault' ); ?></button>
+						</div>
+						<div class="smv-checks" data-smv-group="<?php echo esc_attr( 'formats-' . $smv_gkey ); ?>">
+							<?php foreach ( $smv_opt as $smv_ext ) : ?>
+								<label class="smv-check"><input type="checkbox" name="<?php echo esc_attr( $smv_name ); ?>[enabled_formats][]" value="<?php echo esc_attr( $smv_ext ); ?>" <?php checked( in_array( $smv_ext, $smv_enabled, true ) ); ?>><span><?php echo esc_html( strtoupper( $smv_ext ) ); ?></span></label>
+							<?php endforeach; ?>
+						</div>
+					</div>
+				<?php endforeach; ?>
+				<p class="smv-help"><?php esc_html_e( 'Enabling video adds the “Video playlist” collection type; enabling documents adds the “Download list” type. Scriptable formats (PHP, HTML, SVG, JS, programs) are never supported, and every file’s contents are always checked against its extension.', 'secure-media-vault' ); ?></p>
+			</div>
+
 			<div class="smv-card">
 				<h2 class="smv-card__title"><?php esc_html_e( 'Library upload rules', 'secure-media-vault' ); ?></h2>
 				<div class="smv-field">
@@ -185,7 +225,7 @@ $smv_type_checks = function ( $field, $selected ) use ( $smv_catalogue, $smv_nam
 				<fieldset class="smv-field">
 					<legend><?php esc_html_e( 'Allowed file types', 'secure-media-vault' ); ?></legend>
 					<?php $smv_type_checks( 'allowed_types', $smv_s['allowed_types'] ); ?>
-					<p class="smv-help"><?php esc_html_e( 'Scriptable formats (PHP, HTML, SVG, JS, executables) are never accepted. Every file’s contents are checked against its extension.', 'secure-media-vault' ); ?></p>
+					<p class="smv-help"><?php esc_html_e( 'Only enabled formats are listed. Enable more under “File formats” above.', 'secure-media-vault' ); ?></p>
 				</fieldset>
 			</div>
 

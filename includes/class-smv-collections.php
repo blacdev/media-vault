@@ -14,8 +14,13 @@ class SMV_Collections {
 		return $t['collections'];
 	}
 
+	/**
+	 * Collection types. Video playlists and download lists only appear while a video or
+	 * document format is enabled in Settings → Storage → File formats.
+	 */
 	public static function types() {
-		return array(
+		$groups = SMV_Settings::active_groups();
+		$types  = array(
 			'gallery' => array(
 				'label' => __( 'Image gallery', 'secure-media-vault' ),
 				'desc'  => __( 'Responsive grid with lightbox.', 'secure-media-vault' ),
@@ -26,12 +31,27 @@ class SMV_Collections {
 				'desc'  => __( 'Player with a track list.', 'secure-media-vault' ),
 				'group' => 'audio',
 			),
-			'mixed'   => array(
-				'label' => __( 'Mixed media', 'secure-media-vault' ),
-				'desc'  => __( 'Images and audio together.', 'secure-media-vault' ),
-				'group' => '',
-			),
 		);
+		if ( in_array( 'video', $groups, true ) ) {
+			$types['video'] = array(
+				'label' => __( 'Video playlist', 'secure-media-vault' ),
+				'desc'  => __( 'Player with a video list.', 'secure-media-vault' ),
+				'group' => 'video',
+			);
+		}
+		if ( in_array( 'document', $groups, true ) ) {
+			$types['files'] = array(
+				'label' => __( 'Download list', 'secure-media-vault' ),
+				'desc'  => __( 'Clean list of downloadable files.', 'secure-media-vault' ),
+				'group' => '',
+			);
+		}
+		$types['mixed'] = array(
+			'label' => __( 'Mixed media', 'secure-media-vault' ),
+			'desc'  => __( 'Each item shown by its type.', 'secure-media-vault' ),
+			'group' => '',
+		);
+		return $types;
 	}
 
 	public static function default_settings() {

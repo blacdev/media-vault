@@ -28,7 +28,7 @@ Secure Media Vault is for site owners who want full control over the images and 
 - **Choose where files live.** For each source (your Library, the upload form, Contact Form 7) choose *Local folder*, *Local + Dropbox backup*, or *Dropbox only*.
 - **Stay within limits.** Set a total storage cap (default 50 GB) and change it any time.
 
-Accepted file types: **JPG, JPEG, PNG, MP3, WAV**. Nothing else is ever stored.
+Always-available file types: **JPG, JPEG, PNG, MP3, WAV**. Optional formats (GIF, WebP, AVIF, M4A, OGG, FLAC, AAC, MP4, M4V, WebM, MOV, PDF, Office files, TXT, CSV, ZIP) are **off by default** and must be enabled in *Settings → Storage → File formats* before they can be selected or uploaded.
 
 ## Where it can be used
 
@@ -43,7 +43,7 @@ Accepted file types: **JPG, JPEG, PNG, MP3, WAV**. Nothing else is ever stored.
 | **Storage** | Local server folder, optional **Dropbox** (OAuth 2 with PKCE) |
 | **Tested alongside** | WooCommerce, Elementor, Yoast SEO, Contact Form 7, WP Ghost (Hide My WP Ghost), Autoptimize; themes Twenty Twenty-Five, Twenty Twenty-One, Astra |
 
-Not supported / not tested: WordPress multisite; form plugins other than Contact Form 7 (WPForms, Gravity Forms, Elementor Forms…); file types other than those listed above.
+Not supported / not tested: WordPress multisite; form plugins other than Contact Form 7 (WPForms, Gravity Forms, Elementor Forms…); scriptable formats such as SVG, HTML or PHP (never allowed).
 
 The plugin adds **nothing** to pages that don't use its shortcodes: no CSS, no JavaScript, no database queries.
 
@@ -65,7 +65,7 @@ After activation you'll find a **Media Vault** menu with five sections: **Librar
 
 ### 1. Upload media
 
-**Media Vault → Library → Upload files.** Drag in JPG/PNG images or MP3/WAV audio. Click a file to edit its title and caption, copy its URL, or delete it.
+**Media Vault → Library → Upload files.** Drag in JPG/PNG images or MP3/WAV audio (or any optional format you've enabled and allowed). Click a file to edit its title and caption, copy its URL, or delete it.
 
 ### 2. Create a collection and place it on a page
 
@@ -80,7 +80,9 @@ After activation you'll find a **Media Vault** menu with five sections: **Librar
 |---|---|
 | Image gallery | Responsive grid with a lightbox (keyboard and swipe) |
 | Audio playlist | Player with a track list, optional auto-advance and loop |
-| Mixed media | Images and audio in the collection's order |
+| Video playlist | Player with a video list (needs a video format enabled) |
+| Download list | Files with Download buttons (needs a document format enabled) |
+| Mixed media | Every item shown by its type, in the collection's order |
 
 Per-page overrides: `columns="4"`, `captions="yes|no"`, `lightbox="yes|no"`, `autoplay="yes|no"`, `loop="yes|no"`, `class="my-class"`.
 
@@ -113,7 +115,11 @@ Edit a CF7 form, open its **Media Vault** tab, and tick **Save files sent throug
 
 Forms you don't switch on are not touched. `[mediavault collection:3]` shows a collection inside a CF7 form.
 
-### 5. Storage, Dropbox and limits
+### 5. Enable more file formats (optional)
+
+**Settings → Storage → File formats:** tick the extra formats you need (e.g. PDF, MP4) and save. They then appear under *Allowed file types* (Library) and on the *Upload forms* tab; select them there to accept uploads. Enabling video adds the *Video playlist* type; enabling documents adds the *Download list* type.
+
+### 6. Storage, Dropbox and limits
 
 - **Settings → Storage → Where files are stored:** choose *Local folder*, *Local + Dropbox backup* or *Dropbox only*, separately for Library, Upload form and Contact Form 7 (each CF7 form can override). Local folder is the default everywhere.
 - **Settings → Dropbox:** create a Dropbox app, add the redirect URI shown, enter the app key and secret, click **Connect Dropbox**.
@@ -125,7 +131,7 @@ Full end-user documentation is in [`readme.txt`](readme.txt).
 ## Security
 
 - Every admin action checks capability (`manage_options`, filterable via `smv_capability`) and a nonce.
-- Strict allow-list (JPG, JPEG, PNG, MP3, WAV) plus content sniffing, so a renamed script is rejected.
+- Strict allow-list: JPG, JPEG, PNG, MP3, WAV by default; other formats only after an admin enables them. Content sniffing rejects renamed scripts; SVG/HTML/PHP are never allowed.
 - Uploads are renamed. The upload folder blocks script execution, and private submissions are denied direct web access and use random names.
 - Public forms use a signed configuration, nonce, honeypot, timing check and per-visitor rate limit. All field values are validated server-side.
 - Dropbox secret and tokens are encrypted at rest (AES-256-GCM). Optionally define `SMV_ENCRYPTION_KEY` in `wp-config.php`.

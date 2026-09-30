@@ -390,6 +390,15 @@ void function () {
 	}, true );
 
 	/* ------------------------------------------------------------------
+	 * Download links: let the browser download, keep AJAX loaders out
+	 * ---------------------------------------------------------------- */
+
+	document.addEventListener( 'click', function ( e ) {
+		var a = e.target.closest && e.target.closest( '.smv-files__btn' );
+		if ( a ) { e.stopPropagation(); }
+	}, true );
+
+	/* ------------------------------------------------------------------
 	 * Boot + watch for content added later (AJAX page loads, Elementor
 	 * popups/tabs/editor preview, infinite scroll…)
 	 * ---------------------------------------------------------------- */

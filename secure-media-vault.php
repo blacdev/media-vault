@@ -2,8 +2,8 @@
 /**
  * Plugin Name:       Secure Media Vault
  * Plugin URI:        https://github.com/blacdev/media-vault
- * Description:       Secure uploads of images (JPG, PNG) and audio (MP3, WAV) to a folder you control, optional Dropbox storage, reusable galleries and audio playlists via shortcodes, protected upload forms and Contact Form 7 support.
- * Version:           1.7.0
+ * Description:       Secure uploads of images and audio (plus optional video and documents) to a folder you control, optional Dropbox storage, reusable galleries and playlists via shortcodes, protected upload forms and Contact Form 7 support.
+ * Version:           1.8.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            blacdev
@@ -31,7 +31,7 @@ if ( defined( 'SMV_VERSION' ) || class_exists( 'SMV_Plugin', false ) ) {
 	return;
 }
 
-define( 'SMV_VERSION', '1.7.0' );
+define( 'SMV_VERSION', '1.8.0' );
 define( 'SMV_DB_VERSION', '4' );
 define( 'SMV_FILE', __FILE__ );
 define( 'SMV_DIR', plugin_dir_path( __FILE__ ) );

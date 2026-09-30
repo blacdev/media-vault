@@ -82,11 +82,11 @@ SMV_Admin::header(
 <div class="smv-toolbar">
 	<div class="smv-chips" role="tablist" aria-label="<?php esc_attr_e( 'Filter by type', 'secure-media-vault' ); ?>">
 		<?php
-		$smv_filters = array(
-			'all'   => __( 'All', 'secure-media-vault' ),
-			'image' => __( 'Images', 'secure-media-vault' ),
-			'audio' => __( 'Audio', 'secure-media-vault' ),
-		);
+		// "All" plus one filter per enabled group (Video / Documents only once enabled in Settings).
+		$smv_filters = array( 'all' => __( 'All', 'secure-media-vault' ) );
+		foreach ( SMV_Settings::type_catalogue() as $smv_gkey => $smv_group ) {
+			$smv_filters[ $smv_gkey ] = $smv_group['label'];
+		}
 		foreach ( $smv_filters as $smv_key => $smv_label ) :
 			?>
 			<button type="button" role="tab" class="smv-chip<?php echo 'all' === $smv_key ? ' is-active' : ''; ?>" aria-selected="<?php echo 'all' === $smv_key ? 'true' : 'false'; ?>" data-smv-filter="<?php echo esc_attr( $smv_key ); ?>">

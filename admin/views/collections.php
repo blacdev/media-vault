@@ -22,7 +22,7 @@ SMV_Admin::header(
 	<div class="smv-card smv-empty smv-empty--hero">
 		<span class="smv-empty__icon"><?php echo SMV_Admin::icon( 'grid', 36 ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
 		<h2><?php esc_html_e( 'Create your first collection', 'secure-media-vault' ); ?></h2>
-		<p><?php esc_html_e( 'A collection is a reusable set of images or audio with its own shortcode.', 'secure-media-vault' ); ?></p>
+		<p><?php esc_html_e( 'A collection is a reusable set of media with its own shortcode.', 'secure-media-vault' ); ?></p>
 		<div class="smv-typegrid smv-typegrid--static">
 			<?php foreach ( $smv_types as $smv_key => $smv_type ) : ?>
 				<a class="smv-typecard" href="<?php echo esc_url( add_query_arg( 'type', $smv_key, $smv_new_url ) ); ?>">

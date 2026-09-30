@@ -101,12 +101,14 @@ void function ( $ ) {
 	var ICONS = {
 		image: 'M4 5h16v14H4zM4 16l5-5 4 4 3-3 4 4M15 9h.01',
 		audio: 'M9 18V5l11-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm11-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z',
+		video: 'M4 4h16v16H4zM8 4v16M16 4v16M4 8h4M4 16h4M16 8h4M16 16h4',
+		document: 'M14 3H6v18h12V7l-4-4Zm0 0v4h4',
 		check: 'm5 12 5 5 9-10',
 		x: 'M6 6l12 12M18 6 6 18'
 	};
 	function icon( name, size ) {
 		size = size || 16;
-		return '<svg class="smv-icon" viewBox="0 0 24 24" width="' + size + '" height="' + size + '" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="' + ( ICONS[ name ] || ICONS.image ) + '"/></svg>';
+		return '<svg class="smv-icon" viewBox="0 0 24 24" width="' + size + '" height="' + size + '" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="' + ( ICONS[ name ] || ICONS.document ) + '"/></svg>';
 	}
 
 	function mediaHtml( f ) {
@@ -495,8 +497,10 @@ void function ( $ ) {
 				preview.innerHTML = '<img src="' + esc( f.url ) + '" alt="">';
 			} else if ( f.group === 'audio' ) {
 				preview.innerHTML = '<audio controls preload="metadata" src="' + esc( f.url ) + '"></audio>';
+			} else if ( f.group === 'video' ) {
+				preview.innerHTML = '<video controls preload="metadata" src="' + esc( f.url ) + '"></video>';
 			} else {
-				preview.innerHTML = '';
+				preview.innerHTML = '<span class="smv-tile__media smv-tile__media--document" style="width:100%;height:180px">' + icon( 'document', 40 ) + '</span>';
 			}
 			qs( '[data-smv-d-title]', drawer ).value = f.title;
 			qs( '[data-smv-d-caption]', drawer ).value = f.caption;

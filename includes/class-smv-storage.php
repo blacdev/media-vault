@@ -417,6 +417,9 @@ class SMV_Storage {
 
 	/** Creates an 800px preview next to the image. Returns its relative path or ''. */
 	private static function make_thumb( $abs ) {
+		if ( 'gif' === strtolower( pathinfo( $abs, PATHINFO_EXTENSION ) ) ) {
+			return ''; // Keep animations: galleries show the original GIF.
+		}
 		$editor = wp_get_image_editor( $abs );
 		if ( is_wp_error( $editor ) ) {
 			return '';

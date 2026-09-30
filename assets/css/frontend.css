@@ -378,3 +378,47 @@ fieldset.smv-form__field legend { padding: 0; margin-bottom: .35em; font-weight:
 @supports not (color: color-mix(in srgb, red 50%, blue)) {
 	.smv.smv .smv-playlist__track.is-active { background: rgba(37, 99, 235, .1) !important; }
 }
+
+/* ---------- Video playlists ---------- */
+.smv-playlist--video.smv-playlist--video .smv-playlist__stage { padding: 0; background: #000; }
+.smv-playlist--video.smv-playlist--video .smv-playlist__media { aspect-ratio: 16 / 9; background: #000; }
+.smv.smv video { max-width: 100%; }
+.smv-mixed__item.smv-mixed__item video { display: block; width: 100%; border-radius: var(--smv-radius); }
+
+/* ---------- Download lists ---------- */
+.smv-files.smv-files { margin: 0; padding: 0; list-style: none; border: 1px solid var(--smv-border); border-radius: calc(var(--smv-radius) + 2px); overflow: hidden; }
+.smv-files__row.smv-files__row { display: flex; align-items: center; gap: 1em; padding: .8em 1em; margin: 0; }
+.smv-files__row.smv-files__row + .smv-files__row { border-top: 1px solid var(--smv-border); }
+.smv-files__icon.smv-files__icon {
+	display: grid;
+	place-items: center;
+	flex: none;
+	width: 2.6em; height: 2.6em;
+	border-radius: 8px;
+	background: var(--smv-subtle);
+	font-size: .7em;
+	font-weight: 700;
+	letter-spacing: .03em;
+}
+.smv-files__meta.smv-files__meta { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.smv-files__name.smv-files__name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.smv-files__info.smv-files__info { font-size: .8em; color: var(--smv-muted); }
+.smv-files__btn.smv-files__btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: .4em;
+	padding: .55em 1.1em;
+	border-radius: 8px;
+	color: var(--smv-accent-contrast) !important;
+	font: inherit;
+	font-size: .9em;
+	font-weight: 600;
+	line-height: 1.2;
+	text-decoration: none !important;
+	cursor: pointer;
+	transition: filter .15s;
+}
+.smv-files__btn.smv-files__btn:hover { filter: brightness(1.08); }
+.smv-files__btn.smv-files__btn:focus-visible { outline: 3px solid color-mix(in srgb, var(--smv-accent) 45%, transparent); outline-offset: 2px; }
+.smv.smv .smv-files__btn { background: var(--smv-accent) !important; border: 0 !important; }
