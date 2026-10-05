@@ -24,7 +24,7 @@ Secure Media Vault is for site owners who want full control over the images and 
 
 - **Keep media in one protected place.** Files go to a folder you name inside `wp-content/uploads/`, which blocks script execution. Private files are stored with random names and can't be opened directly from the web.
 - **Build once, use everywhere.** Put images or audio in a *collection* (image gallery, audio playlist, or both mixed) and place it on any page with a shortcode. Edit the collection and every page that uses it updates.
-- **Receive files safely.** A drop-in upload form (with your own extra fields) or your existing Contact Form 7 forms deliver files to a private inbox that only administrators can open.
+- **Receive files safely.** A drop-in upload form (with your own extra fields) or your existing Contact Form 7 forms deliver files to a private inbox that only administrators (and any users you choose under Settings → Access) can open.
 - **Choose where files live.** For each source (your Library, the upload form, Contact Form 7) choose *Local folder*, *Local + Dropbox backup*, or *Dropbox only*.
 - **Stay within limits.** Set a total storage cap (default 50 GB) and change it any time.
 

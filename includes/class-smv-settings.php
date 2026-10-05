@@ -174,6 +174,11 @@ class SMV_Settings {
 			// Contact Form 7.
 			'cf7_mode'             => 'per_form', // per_form (switched on in each CF7 form's "Media Vault" tab) | off.
 			'cf7_forms'            => array(),
+			// Who can open Media Vault in the dashboard (administrators always can): admins | users.
+			'vault_access'         => 'admins', // Library, collections, upload form screen.
+			'vault_users'          => array(),
+			'submissions_access'   => 'admins', // Submissions screen and their files.
+			'submissions_users'    => array(),
 			// Forms.
 			'form_access'          => 'logged_in', // logged_in | anyone.
 			'form_allowed_types'   => array( 'jpg', 'jpeg', 'png', 'mp3', 'wav' ),
@@ -303,6 +308,13 @@ class SMV_Settings {
 		$cf7              = isset( $input['cf7_mode'] ) ? sanitize_key( $input['cf7_mode'] ) : 'per_form';
 		$out['cf7_mode']  = 'off' === $cf7 ? 'off' : 'per_form';
 		$out['cf7_forms'] = isset( $input['cf7_forms'] ) ? array_values( array_filter( array_map( 'absint', (array) $input['cf7_forms'] ) ) ) : array();
+
+		foreach ( array( 'vault', 'submissions' ) as $scope ) {
+			$mode                      = isset( $input[ $scope . '_access' ] ) ? sanitize_key( $input[ $scope . '_access' ] ) : 'admins';
+			$out[ $scope . '_access' ] = 'users' === $mode ? 'users' : 'admins';
+			$ids                       = isset( $input[ $scope . '_users' ] ) ? array_filter( array_map( 'absint', (array) $input[ $scope . '_users' ] ) ) : array();
+			$out[ $scope . '_users' ]  = array_values( array_filter( array_unique( $ids ), 'get_userdata' ) );
+		}
 
 		$access             = isset( $input['form_access'] ) ? sanitize_key( $input['form_access'] ) : 'logged_in';
 		$out['form_access'] = in_array( $access, array( 'logged_in', 'anyone' ), true ) ? $access : 'logged_in';

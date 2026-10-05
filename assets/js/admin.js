@@ -1030,6 +1030,21 @@ void function ( $ ) {
 			referer.value = u.pathname + '?page=smv-settings&tab=' + active.getAttribute( 'data-smv-tab' );
 		}
 
+		qsa( '[data-smv-access]' ).forEach( function ( group ) {
+			var users = group.parentNode.querySelector( '[data-smv-access-users]' );
+			group.addEventListener( 'change', function () {
+				var sel = group.querySelector( 'input[type="radio"]:checked' );
+				if ( users && sel ) { users.hidden = sel.value !== 'users'; }
+			} );
+		} );
+		qsa( '[data-smv-user-filter]' ).forEach( function ( input ) {
+			input.addEventListener( 'input', function () {
+				var q = input.value.toLowerCase().trim();
+				qsa( '[data-smv-user]', input.parentNode ).forEach( function ( row ) {
+					row.style.display = ! q || row.getAttribute( 'data-smv-user' ).indexOf( q ) !== -1 ? '' : 'none';
+				} );
+			} );
+		} );
 		qsa( '[data-smv-toggle-all]' ).forEach( function ( btn ) {
 			btn.addEventListener( 'click', function () {
 				var boxes = qsa( '[data-smv-group="' + btn.getAttribute( 'data-smv-toggle-all' ) + '"] input' );

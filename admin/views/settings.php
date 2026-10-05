@@ -17,6 +17,7 @@ $smv_notice = isset( $_GET['smv_notice'] ) ? sanitize_key( wp_unslash( $_GET['sm
 $smv_tabs = array(
 	'storage' => __( 'Storage', 'secure-media-vault' ),
 	'forms'   => __( 'Upload forms', 'secure-media-vault' ),
+	'access'  => __( 'Access', 'secure-media-vault' ),
 	'dropbox' => __( 'Dropbox', 'secure-media-vault' ),
 	'status'  => __( 'Security & status', 'secure-media-vault' ),
 );
@@ -39,6 +40,72 @@ if ( isset( $smv_notices[ $smv_notice ] ) ) {
 settings_errors();
 
 $smv_name = SMV_Settings::OPTION;
+
+/**
+ * Renders a searchable checklist of existing users (administrators always have access, so they are left out).
+ */
+$smv_user_picker = function ( $field, $selected ) use ( $smv_name ) {
+	$users = get_users(
+		array(
+			'orderby' => 'display_name',
+			'number'  => 500,
+			'fields'  => array( 'ID', 'display_name', 'user_login', 'user_email' ),
+		)
+	);
+	echo '<div class="smv-userpicker" data-smv-userpicker>';
+	echo '<input type="search" class="smv-input" data-smv-user-filter placeholder="' . esc_attr__( 'Search users…', 'secure-media-vault' ) . '" aria-label="' . esc_attr__( 'Search users', 'secure-media-vault' ) . '">';
+	echo '<div class="smv-checks smv-checks--list">';
+	$shown = 0;
+	foreach ( $users as $user ) {
+		if ( user_can( (int) $user->ID, SMV_Plugin::capability() ) ) {
+			continue;
+		}
+		++$shown;
+		printf(
+			'<label class="smv-check" data-smv-user="%1$s"><input type="checkbox" name="%2$s[%3$s][]" value="%4$d" %5$s><span>%6$s <small>%7$s</small></span></label>',
+			esc_attr( strtolower( $user->display_name . ' ' . $user->user_login . ' ' . $user->user_email ) ),
+			esc_attr( $smv_name ),
+			esc_attr( $field ),
+			(int) $user->ID,
+			checked( in_array( (int) $user->ID, array_map( 'intval', (array) $selected ), true ), true, false ),
+			esc_html( $user->display_name ),
+			esc_html( $user->user_email )
+		);
+	}
+	if ( ! $shown ) {
+		echo '<p class="smv-help">' . esc_html__( 'There are no other users yet. Create users under Users → Add New, then come back and select them here.', 'secure-media-vault' ) . '</p>';
+	}
+	echo '</div></div>';
+};
+
+/**
+ * Renders one "administrators only / selected users" card.
+ */
+$smv_access_card = function ( $title, $help, $mode_key, $users_key ) use ( $smv_s, $smv_name, $smv_user_picker ) {
+	?>
+	<div class="smv-card">
+		<h2 class="smv-card__title"><?php echo esc_html( $title ); ?></h2>
+		<p class="smv-help"><?php echo esc_html( $help ); ?></p>
+		<div class="smv-radiocards smv-radiocards--2" data-smv-access>
+			<label class="smv-radiocard">
+				<input type="radio" name="<?php echo esc_attr( $smv_name ); ?>[<?php echo esc_attr( $mode_key ); ?>]" value="admins" <?php checked( $smv_s[ $mode_key ], 'admins' ); ?>>
+				<span class="smv-radiocard__icon"><?php echo SMV_Admin::icon( 'lock', 20 ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
+				<strong><?php esc_html_e( 'Administrators only', 'secure-media-vault' ); ?></strong>
+				<span><?php esc_html_e( 'Recommended. Nobody else can open this.', 'secure-media-vault' ); ?></span>
+			</label>
+			<label class="smv-radiocard">
+				<input type="radio" name="<?php echo esc_attr( $smv_name ); ?>[<?php echo esc_attr( $mode_key ); ?>]" value="users" <?php checked( $smv_s[ $mode_key ], 'users' ); ?>>
+				<span class="smv-radiocard__icon"><?php echo SMV_Admin::icon( 'inbox', 20 ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
+				<strong><?php esc_html_e( 'Administrators and selected users', 'secure-media-vault' ); ?></strong>
+				<span><?php esc_html_e( 'Choose which existing users get access in addition to administrators.', 'secure-media-vault' ); ?></span>
+			</label>
+		</div>
+		<div class="smv-field" data-smv-access-users <?php echo 'users' === $smv_s[ $mode_key ] ? '' : 'hidden'; ?>>
+			<?php $smv_user_picker( $users_key, $smv_s[ $users_key ] ); ?>
+		</div>
+	</div>
+	<?php
+};
 
 /**
  * Renders a grouped file-type checklist.
@@ -70,6 +137,7 @@ $smv_type_checks = function ( $field, $selected ) use ( $smv_catalogue, $smv_nam
 				$smv_icons = array(
 					'storage' => 'shield',
 					'forms'   => 'inbox',
+					'access'  => 'lock',
 					'dropbox' => 'cloud',
 					'status'  => 'check',
 				);
@@ -390,6 +458,27 @@ $smv_type_checks = function ( $field, $selected ) use ( $smv_catalogue, $smv_nam
 			</div>
 		</section>
 
+		<!-- ACCESS -->
+		<section class="smv-panel" id="smv-panel-access" role="tabpanel" data-smv-panel="access" <?php echo 'access' === $smv_tab ? '' : 'hidden'; ?>>
+			<?php
+			$smv_access_card(
+				__( 'Who can use Media Vault', 'secure-media-vault' ),
+				__( 'Library, collections and the upload form screen. Selected users can upload and manage files but cannot see submissions unless you also allow it below.', 'secure-media-vault' ),
+				'vault_access',
+				'vault_users'
+			);
+			$smv_access_card(
+				__( 'Who can see submissions', 'secure-media-vault' ),
+				__( 'Submissions contain files and details sent by visitors. Selected users can read, download, publish and delete them.', 'secure-media-vault' ),
+				'submissions_access',
+				'submissions_users'
+			);
+			?>
+			<div class="smv-card">
+				<p class="smv-help"><?php esc_html_e( 'Administrators always have full access. Only administrators can open these Settings, connect Dropbox or run diagnostics, so selected users cannot change who has access.', 'secure-media-vault' ); ?></p>
+			</div>
+		</section>
+
 		<!-- DROPBOX -->
 		<section class="smv-panel" id="smv-panel-dropbox" role="tabpanel" data-smv-panel="dropbox" <?php echo 'dropbox' === $smv_tab ? '' : 'hidden'; ?>>
 			<div class="smv-card smv-connect<?php echo $smv_connected ? ' is-connected' : ''; ?>">
@@ -490,10 +579,10 @@ location ~* ^/wp-content/uploads/<?php echo esc_html( $smv_s['folder'] ); ?>/.*\
 			<div class="smv-card">
 				<h2 class="smv-card__title"><?php esc_html_e( 'How your files are protected', 'secure-media-vault' ); ?></h2>
 				<ul class="smv-checklist">
-					<li><?php esc_html_e( 'Only administrators can upload to the library, manage collections or read submissions (capability + nonce on every request).', 'secure-media-vault' ); ?></li>
+					<li><?php esc_html_e( 'Only administrators, and users you select under Access, can upload to the library, manage collections or read submissions (permission + nonce checked on every request).', 'secure-media-vault' ); ?></li>
 					<li><?php esc_html_e( 'Strict allow-list of file types; contents are sniffed so a renamed script is rejected. SVG, HTML, PHP and executables are never allowed.', 'secure-media-vault' ); ?></li>
 					<li><?php esc_html_e( 'Uploaded files are renamed; the folder blocks script execution and directory listings.', 'secure-media-vault' ); ?></li>
-					<li><?php esc_html_e( 'Form submissions are stored privately with random names and are only downloadable by administrators through an authenticated link.', 'secure-media-vault' ); ?></li>
+					<li><?php esc_html_e( 'Form submissions are stored privately with random names and are only downloadable by administrators and users you allow under Access, through an authenticated link.', 'secure-media-vault' ); ?></li>
 					<li><?php esc_html_e( 'Public forms use a signed configuration, honeypot, timing check and per-visitor rate limit.', 'secure-media-vault' ); ?></li>
 					<li><?php esc_html_e( 'Dropbox uses OAuth 2 with PKCE; the app secret and tokens are encrypted with AES-256-GCM.', 'secure-media-vault' ); ?></li>
 				</ul>
