@@ -1,6 +1,6 @@
 <?php
 /**
- * Admin AJAX endpoints. Every endpoint requires the vault capability and a valid nonce.
+ * Admin AJAX endpoints. Every endpoint requires the matching access level (vault, submissions or administrator) and a valid nonce.
  *
  * @package SecureMediaVault
  */
@@ -31,13 +31,25 @@ class SMV_Ajax {
 
 	/** Central permission gate, then dispatch. */
 	public static function guard() {
-		if ( ! current_user_can( SMV_Plugin::capability() ) ) {
+		$action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : '';
+		switch ( $action ) {
+			case 'smv_delete_submission':
+			case 'smv_publish_file':
+				$allowed = SMV_Plugin::can_access_submissions();
+				break;
+			case 'smv_dropbox_test':
+			case 'smv_health_check':
+				$allowed = SMV_Plugin::can_manage();
+				break;
+			default:
+				$allowed = SMV_Plugin::can_access_vault();
+		}
+		if ( ! $allowed ) {
 			wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'secure-media-vault' ) ), 403 );
 		}
 		if ( ! check_ajax_referer( 'smv_admin', 'nonce', false ) ) {
 			wp_send_json_error( array( 'message' => __( 'Your session expired. Please reload the page.', 'secure-media-vault' ) ), 403 );
 		}
-		$action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : '';
 		$method = 'action_' . substr( $action, 4 );
 		if ( 0 !== strpos( $action, 'smv_' ) || ! method_exists( __CLASS__, $method ) ) {
 			wp_send_json_error( array( 'message' => 'Unknown action.' ), 400 );

@@ -19,7 +19,7 @@ Secure Media Vault adds a "Media Vault" menu to your WordPress admin with five s
   Each one gets a shortcode such as `[smv_collection id="3"]`. Edit the collection and every page using it updates.
 * **Upload form** – build your upload form and copy its `[smv_upload_form]` shortcode (with a step-by-step guide).
 * **Submissions** – files people send you through the upload form (or connected Contact Form 7 forms), with their answers.
-  Submitted files stay private; only administrators can download them.
+  Submitted files stay private; only administrators, and users you choose under Settings → Access, can download them.
 * **Settings** – folder, file types, size limits, form rules, Dropbox connection and a security check.
 
 Files can be stored locally, locally with a Dropbox backup, or in Dropbox only.

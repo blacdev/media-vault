@@ -20,7 +20,7 @@ class SMV_Admin {
 
 	/** Warn on Media Vault screens when storage is at 90 % of the limit or more. */
 	public static function quota_notice() {
-		if ( ! self::current_page() || ! current_user_can( SMV_Plugin::capability() ) ) {
+		if ( ! self::current_page() || ! SMV_Plugin::can_manage() ) {
 			return;
 		}
 		$q = SMV_Storage::quota_status();
@@ -45,7 +45,7 @@ class SMV_Admin {
 	/** Friendly warning instead of PHP warnings when the uploads folder can't be written. */
 	public static function folder_notice() {
 		$dir = get_option( 'smv_folder_error' );
-		if ( ! $dir || ! current_user_can( SMV_Plugin::capability() ) ) {
+		if ( ! $dir || ! SMV_Plugin::can_manage() ) {
 			return;
 		}
 		printf(
@@ -66,6 +66,11 @@ class SMV_Admin {
 		);
 	}
 
+	/** Pages the current user may open. */
+	public static function allowed_pages() {
+		return array_filter( self::pages(), array( 'SMV_Plugin', 'can_access_page' ), ARRAY_FILTER_USE_KEY );
+	}
+
 	private static function new_submissions() {
 		global $wpdb;
 		$t = SMV_Installer::tables();
@@ -73,18 +78,24 @@ class SMV_Admin {
 	}
 
 	public static function menu() {
-		$cap  = SMV_Plugin::capability();
-		$new  = self::new_submissions();
+		$pages = self::allowed_pages();
+		if ( ! $pages ) {
+			return;
+		}
+		// Access is decided per page by SMV_Plugin::can_access_page(); only pages the user may open are registered.
+		$cap  = 'read';
+		$top  = key( $pages );
+		$new  = isset( $pages['smv-submissions'] ) ? self::new_submissions() : 0;
 		$icon = 'data:image/svg+xml;base64,' . base64_encode( '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="black" d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4Zm0 6a2.5 2.5 0 0 1 1 4.79V15h-2v-3.21A2.5 2.5 0 0 1 12 7Z"/></svg>' ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions
 
-		add_menu_page( __( 'Media Vault', 'secure-media-vault' ), __( 'Media Vault', 'secure-media-vault' ), $cap, 'smv-library', array( __CLASS__, 'render' ), $icon, 11 );
+		add_menu_page( __( 'Media Vault', 'secure-media-vault' ), __( 'Media Vault', 'secure-media-vault' ), $cap, $top, array( __CLASS__, 'render' ), $icon, 11 );
 
-		foreach ( self::pages() as $slug => $label ) {
+		foreach ( $pages as $slug => $label ) {
 			$menu_label = $label;
 			if ( 'smv-submissions' === $slug && $new ) {
 				$menu_label .= ' <span class="awaiting-mod">' . (int) $new . '</span>';
 			}
-			add_submenu_page( 'smv-library', $label . ' ‹ ' . __( 'Media Vault', 'secure-media-vault' ), $menu_label, $cap, $slug, array( __CLASS__, 'render' ) );
+			add_submenu_page( $top, $label . ' ‹ ' . __( 'Media Vault', 'secure-media-vault' ), $menu_label, $cap, $slug, array( __CLASS__, 'render' ) );
 		}
 	}
 
@@ -104,7 +115,7 @@ class SMV_Admin {
 
 	public static function assets() {
 		$page = self::current_page();
-		if ( ! $page ) {
+		if ( ! $page || ! SMV_Plugin::can_access_page( $page ) ) {
 			return;
 		}
 		wp_enqueue_style( 'smv-admin', SMV_URL . 'assets/css/admin.css', array(), SMV_VERSION );
@@ -168,10 +179,10 @@ class SMV_Admin {
 	}
 
 	public static function render() {
-		if ( ! current_user_can( SMV_Plugin::capability() ) ) {
-			wp_die( esc_html__( 'You are not allowed to access this page.', 'secure-media-vault' ) );
-		}
 		$page = self::current_page();
+		if ( ! $page || ! SMV_Plugin::can_access_page( $page ) ) {
+			wp_die( esc_html__( 'You are not allowed to access this page.', 'secure-media-vault' ), 403 );
+		}
 		$map  = array(
 			'smv-library'     => 'library',
 			'smv-collections' => isset( $_GET['edit'] ) || isset( $_GET['new'] ) ? 'collection-edit' : 'collections', // phpcs:ignore WordPress.Security.NonceVerification
@@ -211,7 +222,7 @@ class SMV_Admin {
 			<div class="smv-header__actions"><?php echo $actions; // phpcs:ignore WordPress.Security.EscapeOutput -- built from escaped parts by callers. ?></div>
 		</header>
 		<nav class="smv-tabs" aria-label="<?php esc_attr_e( 'Media Vault sections', 'secure-media-vault' ); ?>">
-			<?php foreach ( self::pages() as $slug => $label ) : ?>
+			<?php foreach ( self::allowed_pages() as $slug => $label ) : ?>
 				<a class="smv-tabs__item<?php echo $current === $slug ? ' is-active' : ''; ?>" href="<?php echo esc_url( admin_url( 'admin.php?page=' . $slug ) ); ?>"<?php echo $current === $slug ? ' aria-current="page"' : ''; ?>><?php echo esc_html( $label ); ?></a>
 			<?php endforeach; ?>
 		</nav>

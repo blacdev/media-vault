@@ -1,6 +1,6 @@
 <?php
 /**
- * Authenticated streaming of private files (form submissions) to administrators.
+ * Authenticated streaming of private files (form submissions) to administrators and the users chosen in Settings → Access.
  *
  * @package SecureMediaVault
  */
@@ -28,7 +28,7 @@ class SMV_Download {
 
 	public static function handle() {
 		$id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification -- verified below.
-		if ( ! current_user_can( SMV_Plugin::capability() ) ) {
+		if ( ! SMV_Plugin::can_access_vault() && ! SMV_Plugin::can_access_submissions() ) {
 			wp_die( esc_html__( 'You are not allowed to access this file.', 'secure-media-vault' ), 403 );
 		}
 		check_admin_referer( 'smv_download_' . $id );
@@ -36,6 +36,11 @@ class SMV_Download {
 		$file = SMV_Files::get( $id );
 		if ( ! $file ) {
 			wp_die( esc_html__( 'File not found.', 'secure-media-vault' ), 404 );
+		}
+		// Submission files need submissions access; everything else needs library access.
+		$allowed = 'private' === $file->visibility ? SMV_Plugin::can_access_submissions() : SMV_Plugin::can_access_vault();
+		if ( ! $allowed ) {
+			wp_die( esc_html__( 'You are not allowed to access this file.', 'secure-media-vault' ), 403 );
 		}
 
 		$abs = $file->rel_path ? SMV_Storage::rel_to_abs( $file->rel_path ) : '';
